@@ -10,6 +10,46 @@ app.secret_key = 'your-secret-key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+def create_tables():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            date TEXT NOT NULL,
+            cost REAL NOT NULL,
+            available_places INTEGER NOT NULL
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            event_id INTEGER NOT NULL,
+            places INTEGER NOT NULL,
+            total_cost REAL NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (event_id) REFERENCES events(id)
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+
+
 DATABASE = 'database.db'
 
 # User loader for Flask-Login
@@ -99,4 +139,5 @@ def event_detail(event_id):
     return render_template('event_detail.html', event=event)
 
 if __name__ == '__main__':
+    create_tables()
     app.run(debug=True)
