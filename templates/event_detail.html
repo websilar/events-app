@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ event[1] }} Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>{{ event[1] }}</h2>
+        <p><strong>Date:</strong> {{ event[3] }}</p>
+        <p><strong>Description:</strong> {{ event[2] }}</p>
+        <p><strong>Cost per place:</strong> £{{ event[4] }}</p>
+        <p><strong>Places Available:</strong> {{ event[5] }}</p>
+
+        <form method="POST">
+            <input type="number" name="places" min="1" max="{{ event[5] }}" required>
+            <button type="submit">Confirm Booking</button>
+        </form>
+
+        <a href="{{ url_for('events') }}">← Back to Events</a>
+    </div>
+</body>
+</html>

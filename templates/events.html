@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upcoming Events</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Upcoming Events</h2>
+        <a href="{{ url_for('logout') }}">Log out</a>
+        {% for event in events %}
+            <div class="event-card">
+                <h3>{{ event[1] }}</h3>
+                <p><strong>Date:</strong> {{ event[2] }}</p>
+                <p><strong>Cost:</strong> £{{ event[3] }}</p>
+                <p><strong>Places Available:</strong> {{ event[4] }}</p>
+                <a href="{{ url_for('event_detail', event_id=event[0]) }}">
+                    <button>Attend</button>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
