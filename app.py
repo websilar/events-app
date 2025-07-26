@@ -7,6 +7,8 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 
+DATABASE = 'database.db'
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -50,7 +52,7 @@ def create_tables():
 
 
 
-DATABASE = 'database.db'
+
 
 # User loader for Flask-Login
 class User(UserMixin):
