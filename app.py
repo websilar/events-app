@@ -7,11 +7,6 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 
-DATABASE = 'database.db'
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
 def create_tables():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -49,6 +44,15 @@ def create_tables():
 
     conn.commit()
     conn.close()
+
+
+DATABASE = 'database.db'
+
+create_tables()
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 
 
 
@@ -141,5 +145,5 @@ def event_detail(event_id):
     return render_template('event_detail.html', event=event)
 
 if __name__ == '__main__':
-    create_tables()
+    
     app.run(debug=True)
