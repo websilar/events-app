@@ -7,6 +7,9 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+
 def create_tables():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
@@ -90,6 +93,7 @@ def login():
         conn.close()
         if user and check_password_hash(user[1], password):
             login_user(User(user[0], email))
+            session.permanent = True
             return redirect(url_for('events'))
     return render_template('login.html')
 
