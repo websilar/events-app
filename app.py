@@ -91,9 +91,14 @@ def login():
         cursor.execute("SELECT id, password FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
         conn.close()
+
+        print("User fetched:", user)
+
         if user and check_password_hash(user[1], password):
             login_user(User(user[0], email))
             session.permanent = True
+            print("Session user ID:", session.get('_user_id'))
+
             return redirect(url_for('events'))
     return render_template('login.html')
 
