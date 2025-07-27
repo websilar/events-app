@@ -53,6 +53,20 @@ DATABASE = 'database.db'
 
 create_tables()
 
+# Check if column already exists
+cursor.execute("PRAGMA table_info(events)")
+columns = [col[1] for col in cursor.fetchall()]
+if 'available_places' not in columns:
+    cursor.execute("ALTER TABLE events ADD COLUMN available_places INTEGER DEFAULT 0")
+    print("✅ Column 'available_places' added.")
+else:
+    print(ℹ️ Column 'available_places' already exists.")
+
+conn.commit()
+conn.close()
+
+
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
