@@ -44,6 +44,12 @@ def create_tables():
             FOREIGN KEY (event_id) REFERENCES events(id)
         )
     ''')
+    # Patch schema
+    cursor.execute("PRAGMA table_info(events)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if 'available_places' not in columns:
+        cursor.execute("ALTER TABLE events ADD COLUMN available_places INTEGER DEFAULT 0")
+        print("🧱 Column 'available_places' added.")
 
     conn.commit()
     conn.close()
@@ -53,20 +59,7 @@ DATABASE = 'database.db'
 
 create_tables()
 
-# Check if column already exists
-conn = sqlite3.connect(DATABASE)
-cursor = conn.cursor()
 
-cursor.execute("PRAGMA table_info(events)")
-columns = [col[1] for col in cursor.fetchall()]
-if 'available_places' not in columns:
-    cursor.execute("ALTER TABLE events ADD COLUMN available_places INTEGER DEFAULT 0")
-    print("Column 'available_places' added.")
-else:
-    print("Column 'available_places' already exists.")
-
-conn.commit()
-conn.close()
 
 
 
