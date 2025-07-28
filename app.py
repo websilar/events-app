@@ -118,7 +118,7 @@ def logout():
 def events():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, date, loc, place, stime, etime, cost FROM events ORDER BY date ASC")
+    cursor.execute("SELECT id, title, date, stime, etime, loc, place, cost, accom, travel FROM events WHERE id = ?", (event_id,))
     events = cursor.fetchall()
     conn.close()
     return render_template('events.html', events=events)
