@@ -3,12 +3,15 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
+
+DATABASE = 'database.db'
 
 def create_tables():
     conn = sqlite3.connect(DATABASE)
@@ -26,10 +29,14 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            description TEXT,
             date TEXT NOT NULL,
+            stime TEXT,
+            etime TEXT,
+            place INTEGER NOT NULL,
+            loc TEXT,
             cost REAL NOT NULL,
-            available_places INTEGER NOT NULL
+            accom TEXT,
+            travel TEXT
         )
     ''')
 
@@ -44,34 +51,15 @@ def create_tables():
             FOREIGN KEY (event_id) REFERENCES events(id)
         )
     ''')
-    # Patch schema
-    cursor.execute("PRAGMA table_info(events)")
-    columns = [col[1] for col in cursor.fetchall()]
-    if 'available_places' not in columns:
-        cursor.execute("ALTER TABLE events ADD COLUMN available_places INTEGER DEFAULT 0")
-        print("🧱 Column 'available_places' added.")
 
     conn.commit()
     conn.close()
 
-
-DATABASE = 'database.db'
-
 create_tables()
-
-
-
-
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
-
-
-
-
-# User loader for Flask-Login
 class User(UserMixin):
     def __init__(self, id_, email):
         self.id = id_
@@ -86,7 +74,6 @@ def load_user(user_id):
     conn.close()
     return User(user[0], user[1]) if user else None
 
-# Routes
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -102,14 +89,11 @@ def login():
         user = cursor.fetchone()
         conn.close()
 
-        print("User fetched:", user)
-
         if user and check_password_hash(user[1], password):
             login_user(User(user[0], email))
             session.permanent = True
-            print("Session user ID:", session.get('_user_id'))
-
             return redirect(url_for('events'))
+
     return render_template('login.html')
 
 @app.route('/signup', methods=['POST'])
@@ -134,7 +118,7 @@ def logout():
 def events():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, date, cost, available_places FROM events ORDER BY date ASC")
+    cursor.execute("SELECT id, title, date, loc, place, stime, etime, cost FROM events ORDER BY date ASC")
     events = cursor.fetchall()
     conn.close()
     return render_template('events.html', events=events)
@@ -144,19 +128,19 @@ def events():
 def event_detail(event_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, description, date, cost, available_places FROM events WHERE id = ?", (event_id,))
+    cursor.execute("SELECT id, title, date, stime, etime, loc, place, cost FROM events WHERE id = ?", (event_id,))
     event = cursor.fetchone()
     conn.close()
 
     if request.method == 'POST':
         places = int(request.form['places'])
-        total_cost = event[4] * places
+        total_cost = event[7] * places
 
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute("INSERT INTO bookings (user_id, event_id, places, total_cost) VALUES (?, ?, ?, ?)",
                        (session['_user_id'], event_id, places, total_cost))
-        cursor.execute("UPDATE events SET available_places = available_places - ? WHERE id = ?", (places, event_id))
+        cursor.execute("UPDATE events SET place = place - ? WHERE id = ?", (places, event_id))
         conn.commit()
         conn.close()
         return redirect(url_for('events'))
@@ -164,5 +148,5 @@ def event_detail(event_id):
     return render_template('event_detail.html', event=event)
 
 if __name__ == '__main__':
-    
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=True)
